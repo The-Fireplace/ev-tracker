@@ -168,6 +168,7 @@ def _cmd_battle(args):
 
     print(pokemon.evs)
     print(pokemon)
+    _save_tracker()
 
 
 def _cmd_release(args):
