@@ -223,12 +223,12 @@ class Pokemon(object):
 
     def status(self, location=None):
         status = [str(self)]
-        if location is not None:
-            status.append('Location: ' + location)
+        if location:
+            status.append(f'Location: {location}')
         if self.pokerus:
             status.append('Pokerus')
         if self._itemName:
-            status.append(self._itemName)
+            status.append(f'Item: {self._itemName}')
         status.append(str(self.evs))
         return '\n'.join(status)
 
