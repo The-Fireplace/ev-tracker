@@ -5,6 +5,10 @@ def get_power_item_effort():
     return 8 if config.instance.double_power_items_effort() else 4
 
 
+def get_berry_reduction_amount(current_stat):
+    return current_stat - 100 if config.instance.berry_reduction_cuts_to_100() and current_stat > 100 else 10
+
+
 ITEMS = {
     'Macho Brace': lambda evs: evs * 2,
     'Power Weight': lambda evs: evs + EvSet(hp=get_power_item_effort()),
@@ -12,7 +16,29 @@ ITEMS = {
     'Power Belt': lambda evs: evs + EvSet(defense=get_power_item_effort()),
     'Power Lens': lambda evs: evs + EvSet(special_attack=get_power_item_effort()),
     'Power Band': lambda evs: evs + EvSet(special_defense=get_power_item_effort()),
-    'Power Anklet': lambda evs: evs + EvSet(speed=get_power_item_effort())
+    'Power Anklet': lambda evs: evs + EvSet(speed=get_power_item_effort()),
+}
+
+VITAMINS = {
+    'HP Up': lambda evs: evs.capped_add(EvSet(hp=10)),
+    'Protein': lambda evs: evs.capped_add(EvSet(attack=10)),
+    'Iron': lambda evs: evs.capped_add(EvSet(defense=10)),
+    'Calcium': lambda evs: evs.capped_add(EvSet(special_attack=10)),
+    'Zinc': lambda evs: evs.capped_add(EvSet(special_defense=10)),
+    'Carbos': lambda evs: evs.capped_add(EvSet(speed=10)),
+    'Health Feather': lambda evs: evs.capped_add(EvSet(hp=1)),
+    'Muscle Feather': lambda evs: evs.capped_add(EvSet(attack=1)),
+    'Resist Feather': lambda evs: evs.capped_add(EvSet(defense=1)),
+    'Genius Feather': lambda evs: evs.capped_add(EvSet(special_attack=1)),
+    'Clever Feather': lambda evs: evs.capped_add(EvSet(special_defense=1)),
+    'Swift Feather': lambda evs: evs.capped_add(EvSet(speed=1)),
+    'Pomeg Berry': lambda evs: evs.capped_subtract(EvSet(hp=get_berry_reduction_amount(evs.hp))),
+    'Kelpsy Berry': lambda evs: evs.capped_subtract(EvSet(attack=get_berry_reduction_amount(evs.attack))),
+    'Qualot Berry': lambda evs: evs.capped_subtract(EvSet(defense=get_berry_reduction_amount(evs.defense))),
+    'Hondew Berry': lambda evs: evs.capped_subtract(EvSet(special_attack=get_berry_reduction_amount(evs.special_attack))),
+    'Grepa Berry': lambda evs: evs.capped_subtract(EvSet(special_defense=get_berry_reduction_amount(evs.special_defense))),
+    'Tamato Berry': lambda evs: evs.capped_subtract(EvSet(speed=get_berry_reduction_amount(evs.speed))),
+    'Perilous Soup': lambda evs: evs.__imul__(0),
 }
 
 
@@ -66,6 +92,15 @@ class EvSet(object):
                 add_amount = stat_max - stat_amount
 
             self.__dict__[stat] += add_amount
+
+    def capped_subtract(self, other):
+        for stat in EvSet.STATS:
+            subtract_amount = other.__dict__[stat]
+            stat_amount = self.__dict__[stat]
+            if stat_amount - subtract_amount < 0:
+                subtract_amount = stat_amount
+
+            self.__dict__[stat] -= subtract_amount
 
     def __str__(self):
         ev_string = ['+%d %s' % (ev, EvSet.label(stat)) for stat, ev in self.to_dict().items() if ev > 0]
@@ -201,6 +236,12 @@ class Pokemon(object):
         if self.pokerus:
             evs *= 2
         self.evs.capped_add(evs * number)
+       
+    def vitamin(self, vitamin):
+        if vitamin not in VITAMINS:
+            raise ValueError("Invalid vitamin '%s'" % vitamin)
+        VITAMINS[vitamin](self.evs)
+        
 
     def to_dict(self):
         return {'species': self.species.id, 'name': self._name,

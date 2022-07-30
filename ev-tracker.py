@@ -198,6 +198,15 @@ def _cmd_update(args):
     _save_tracker()
 
 
+def _cmd_vitamin(args):
+    individual_id = args.id
+    pokemon = _tracker.get_pokemon(individual_id)
+    pokemon.vitamin(args.vitamin)
+    _save_tracker()
+    print(pokemon)
+    print(pokemon.evs)
+
+
 def _cmd_set_effort(args):
     individual_id = args.id
     pokemon = _tracker.get_pokemon(individual_id)
@@ -301,6 +310,11 @@ def _build_parser():
     update_parser.add_argument('--withdraw', '-w', action='store_true', default=False,
                                help='Add the pokemon to the team')
     update_parser.set_defaults(func=_cmd_update)
+
+    vitamin_parser = subparsers.add_parser('vitamin', help='Apply a consumable item to a Pokemon')
+    vitamin_parser.add_argument('id', type=int, help='Pokemon to apply the vitamin to')
+    vitamin_parser.add_argument('vitamin', help='Item to apply')
+    vitamin_parser.set_defaults(func=_cmd_vitamin)
 
     set_effort_parser = subparsers.add_parser('set_effort', help='Update a tracked Pokemon\'s effort values')
     set_effort_parser.add_argument('id', type=int, help='Pokemon to update')

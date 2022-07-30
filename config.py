@@ -18,6 +18,9 @@ class Config(object):
     def smart_iv_cap(self):
         return self.generation > 6
 
+    def berry_reduction_cuts_to_100(self):
+        return self.generation == 4
+
     @classmethod
     def from_json(cls, filename):
         config = cls()
