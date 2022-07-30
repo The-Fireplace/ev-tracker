@@ -129,8 +129,8 @@ def _cmd_track(args):
     pokemon = Pokemon(id=_tracker.unique_id(), species=species,
                       name=args.name, item=args.item, pokerus=args.pokerus)
     _tracker.track(pokemon)
-    print(pokemon)
     _save_tracker()
+    print(pokemon)
 
 
 def _cmd_team(args):
@@ -158,12 +158,14 @@ def _cmd_deposit(args):
     individual_id = args.id
     _tracker.remove_from_team(individual_id)
     _save_tracker()
+    print(_tracker.get_pokemon(individual_id))
 
 
 def _cmd_withdraw(args):
     individual_id = args.id
     _tracker.add_to_team(individual_id)
     _save_tracker()
+    print(_tracker.get_pokemon(individual_id))
 
 
 def _cmd_status(args):
@@ -196,6 +198,8 @@ def _cmd_update(args):
     if args.withdraw is True:
         _tracker.add_to_team(individual_id)
     _save_tracker()
+    location = 'Team' if _tracker.on_team(individual_id) else 'Box'
+    print(pokemon.status(location))
 
 
 def _cmd_vitamin(args):
@@ -240,8 +244,8 @@ def _cmd_battle(args):
 def _cmd_release(args):
     pokemon = _tracker.get_pokemon(args.id)
     _tracker.untrack(pokemon)
-    print('No longer tracking %s' % pokemon)
     _save_tracker()
+    print('No longer tracking %s' % pokemon)
 
 
 def _build_parser():
