@@ -174,7 +174,8 @@ def _cmd_status(args):
 
 
 def _cmd_update(args):
-    pokemon = _tracker.get_pokemon(args.id)
+    individual_id = args.id
+    pokemon = _tracker.get_pokemon(individual_id)
     if args.pokerus is True:
         pokemon.pokerus = True
     if args.nopokerus is True:
@@ -190,10 +191,10 @@ def _cmd_update(args):
         pokemon.name = str(args.name)
     if args.noname is True:
         pokemon.name = None
-    #if args.active is True:
-    #    pokemon.active = True
-    #if args.box is True:
-    #    pokemon.active = False
+    if args.deposit is True:
+        _tracker.remove_from_team(individual_id)
+    if args.withdraw is True:
+        _tracker.add_to_team(individual_id)
     _save_tracker()
 
 
@@ -285,10 +286,10 @@ def _build_parser():
                                help='Indicates the given Pokemon does not have Pokerus')
     update_parser.add_argument('--item', '-i')
     update_parser.add_argument('--noitem', '-ni', action='store_true', default=False)
-    #update_parser.add_argument('--active', '-a', action='store_true', default=False,
-    #                           help='Indicates if the given Pokemon is active')
-    #update_parser.add_argument('--box', '-b', action='store_true', default=False,
-    #                           help='Indicates if the given Pokemon is inactive')
+    update_parser.add_argument('--deposit', '-d', action='store_true', default=False,
+                               help='Take the pokemon off the team')
+    update_parser.add_argument('--withdraw', '-w', action='store_true', default=False,
+                               help='Add the pokemon to the team')
     update_parser.set_defaults(func=_cmd_update)
 
     battle_parser = subparsers.add_parser('battle', help='Record a battle for a tracked Pokemon')
