@@ -152,7 +152,27 @@ def _cmd_status(args):
 
 
 def _cmd_update(args):
-    raise NotImplementedError('update command is not yet implemented.')
+    pokemon = _tracker.get_pokemon(args.id)
+    if args.pokerus is True:
+        pokemon.pokerus = True
+    if args.nopokerus is True:
+        pokemon.pokerus = False
+    if args.species is not None:
+        species = pokedex.search(args.species)
+        pokemon.species = species
+    if args.item is not None:
+        pokemon.item = str(args.item)
+    if args.noitem is True:
+        pokemon.item = None
+    if args.name is not None:
+        pokemon.name = str(args.name)
+    if args.noname is True:
+        pokemon.name = None
+    #if args.active is True:
+    #    pokemon.active = True
+    #if args.box is True:
+    #    pokemon.active = False
+    _save_tracker()
 
 
 def _cmd_battle(args):
@@ -219,6 +239,20 @@ def _build_parser():
     status_parser.set_defaults(func=_cmd_status)
 
     update_parser = subparsers.add_parser('update', help='Update a tracked Pokemon\'s details')
+    update_parser.add_argument('id', type=int, help='Pokemon to update')
+    update_parser.add_argument('--species', help='Name or number of Pokemon species')
+    update_parser.add_argument('--name', '-n', help='Nickname of Pokemon')
+    update_parser.add_argument('--noname', '-nn', action='store_true', default=False)
+    update_parser.add_argument('--pokerus', '-p', action='store_true', default=False,
+                               help='Indicates the given Pokemon has Pokerus')
+    update_parser.add_argument('--nopokerus', '-np', action='store_true', default=False,
+                               help='Indicates the given Pokemon does not have Pokerus')
+    update_parser.add_argument('--item', '-i')
+    update_parser.add_argument('--noitem', '-ni', action='store_true', default=False)
+    #update_parser.add_argument('--active', '-a', action='store_true', default=False,
+    #                           help='Indicates if the given Pokemon is active')
+    #update_parser.add_argument('--box', '-b', action='store_true', default=False,
+    #                           help='Indicates if the given Pokemon is inactive')
     update_parser.set_defaults(func=_cmd_update)
 
     battle_parser = subparsers.add_parser('battle', help='Record a battle for a tracked Pokemon')
