@@ -120,11 +120,11 @@ def _save_tracker():
 
 
 def _cmd_ev(args):
-    print pokedex.search(args.species)
+    print(pokedex.search(args.species))
 
 
 def _cmd_list(args):
-    print _tracker
+    print(_tracker)
 
 
 def _cmd_track(args):
@@ -132,7 +132,7 @@ def _cmd_track(args):
     pokemon = Pokemon(id=_tracker.unique_id(), species=species,
                       name=args.name, item=args.item, pokerus=args.pokerus)
     _tracker.track(pokemon)
-    print pokemon
+    print(pokemon)
     _save_tracker()
 
 
@@ -140,7 +140,7 @@ def _cmd_active(args):
     if args.switch:
         _tracker.active = _tracker.get_pokemon(args.switch)
         _save_tracker()
-    print _tracker.active
+    print(_tracker.active)
 
 
 def _cmd_status(args):
@@ -148,7 +148,7 @@ def _cmd_status(args):
         pokemon = _tracker.active
     else:
         pokemon = _tracker.get_pokemon(args.id)
-    print pokemon.status()
+    print(pokemon.status())
 
 
 def _cmd_update(args):
@@ -164,14 +164,14 @@ def _cmd_battle(args):
 
     pokemon.battle(species)
 
-    print evs
-    print pokemon
+    print(pokemon.evs)
+    print(pokemon)
 
 
 def _cmd_release(args):
     pokemon = _tracker.get_pokemon(args.id)
     _tracker.untrack(pokemon)
-    print 'No longer tracking %s' % pokemon
+    print('No longer tracking %s' % pokemon)
     _save_tracker()
 
 
@@ -236,14 +236,14 @@ if __name__ == '__main__':
         _tracker = Tracker.from_json(args.filename)
         args.func(args)
     except pokedex.NoSuchSpecies as e:
-        print "No match found for '%s'." % e.identifier
+        print("No match found for '%s'." % e.identifier)
         if isinstance(e, pokedex.AmbiguousSpecies):
-            print "Did you mean:"
+            print("Did you mean:")
             for match in e.matches:
-                print "  %s" % match
+                print("  %s" % match)
     except NoActivePokemon:
-        print "No tracked Pokemon is marked as active."
-        print "Set an active pokemon using the 'active --switch' command."
+        print("No tracked Pokemon is marked as active.")
+        print("Set an active pokemon using the 'active --switch' command.")
     except NoTrackedPokemon as e:
-        print "No tracked Pokemon with id '%d' was found." % e.id
+        print("No tracked Pokemon with id '%d' was found." % e.id)
 

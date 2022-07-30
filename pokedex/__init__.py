@@ -9,7 +9,7 @@ import difflib
 from pokemon import Species, EvSet
 
 
-__all__ = ['NoSuchSpecies', 'AmbiguousSpecies', 'fetch_by_id', 'fetch_by_name' 'search']
+__all__ = ['NoSuchSpecies', 'AmbiguousSpecies', 'fetch_by_id', 'fetch_by_name', 'search']
 
 
 _DB_FILE = os.path.join(os.path.dirname(__file__), 'pokedex.db')

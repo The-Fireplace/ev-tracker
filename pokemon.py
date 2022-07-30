@@ -143,7 +143,7 @@ class Pokemon(object):
         padding = '* ' if self is active else '  '
         return '%s%s' % (padding, self)
 
-    def battle(species, number=1):
+    def battle(self, species, number=1):
         '''
         Alter's a tracked Pokemons EVs to simulate having battled a Species.
         These values are altered by pokerus and any item held. The EV
