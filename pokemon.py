@@ -50,8 +50,7 @@ class EvSet(object):
 
     def __mul__(self, integer):
         evs = self.clone()
-        for stat in EvSet.STATS:
-            evs.__dict__[stat] *= integer
+        evs *= integer
         return evs
 
     def capped_add(self, other):
