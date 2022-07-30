@@ -165,7 +165,7 @@ class Species(object):
         self.evs = EvSet() if evs is None else evs
 
     def __str__(self):
-        return '#%03d %-10s %s' % (self.id, self.name, self.evs)
+        return '#%03d %-10s %s' % (self.id, self.name, self.evs.as_modifier_string())
 
 
 class Pokemon(object):
