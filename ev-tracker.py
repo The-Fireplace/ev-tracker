@@ -232,12 +232,17 @@ def _cmd_battle(args):
 
     count = 1 if args.count is None else args.count
 
+    print(f'Battled {count} × {species.name} (#{species.id}) '
+          + f'which has a base EV reward of {species.evs.as_modifier_string()}\n')
+
     for individual_id in battling_ids:
         pokemon = _tracker.get_pokemon(individual_id)
-        pokemon.battle(species, count)
+        reward = pokemon.get_battle_ev_reward(species, count)
+        pokemon.evs.capped_add(reward)
 
-        print(pokemon)
-        print(pokemon.evs)
+        print(f'{pokemon} new EVs:')
+        print(pokemon.evs.format_with_adjustment_amounts(reward))
+        print()
     _save_tracker()
 
 

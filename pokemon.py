@@ -103,13 +103,17 @@ class EvSet(object):
             self.__dict__[stat] -= subtract_amount
 
     def __str__(self):
-        ev_string = ['+%d %s' % (ev, EvSet.label(stat)) for stat, ev in self.to_dict().items() if ev > 0]
-        return ', '.join(ev_string)
-
-    def verbose(self):
         ev_string = ['%s: %d' % (EvSet.label(stat), ev) for stat, ev in self.to_dict().items() if ev > 0]
         if not len(ev_string):
             return 'No EVs'
+        return '\n'.join(ev_string)
+
+    def as_modifier_string(self):
+        ev_string = ['+%d %s' % (ev, EvSet.label(stat)) for stat, ev in self.to_dict().items() if ev > 0]
+        return ', '.join(ev_string)
+
+    def format_with_adjustment_amounts(self, other):
+        ev_string = ['%s: %d (+%d)' % (EvSet.label(stat), ev, other.to_dict()[stat]) for stat, ev in self.to_dict().items() if ev > 0]
         return '\n'.join(ev_string)
 
     def clone(self):
@@ -224,7 +228,7 @@ class Pokemon(object):
         padding = '* ' if self.id in team else '  '
         return '%s%s' % (padding, self)
 
-    def battle(self, species, number=1):
+    def get_battle_ev_reward(self, species, number=1):
         """
         Alter's a tracked Pokémon's EVs to simulate having battled a Species.
         These values are altered by pokerus and any item held. The EV
@@ -235,7 +239,7 @@ class Pokemon(object):
             evs = self.item(evs)
         if self.pokerus:
             evs *= 2
-        self.evs.capped_add(evs * number)
+        return evs * number
        
     def vitamin(self, vitamin):
         if vitamin not in VITAMINS:
