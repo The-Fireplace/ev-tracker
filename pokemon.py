@@ -160,8 +160,10 @@ class Pokemon(object):
         else:
             return '%d %s' % (self.id, name)
 
-    def status(self):
+    def status(self, location=None):
         status = [str(self)]
+        if location is not None:
+            status.append('Location: ' + location)
         if self.pokerus:
             status.append('Pokerus')
         if self._itemName:
@@ -169,8 +171,8 @@ class Pokemon(object):
         status.append(self.evs.verbose())
         return '\n'.join(status)
 
-    def listing(self, active):
-        padding = '* ' if self is active else '  '
+    def listing(self, team):
+        padding = '* ' if self.id in team else '  '
         return '%s%s' % (padding, self)
 
     def battle(self, species, number=1):
