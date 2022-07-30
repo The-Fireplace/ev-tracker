@@ -106,7 +106,25 @@ class EvSet(object):
             self.__dict__[stat] += add_amount
 
     def __str__(self):
-        ev_string = ['%s: %d' % (EvSet.label(stat), ev) for stat, ev in self.to_dict().items() if ev > 0]
+        return self.format()
+
+    def format(self, adjustment_amounts=None, targets=None):
+        if targets is None:
+            targets = EvSet()
+        targets = targets.to_dict()
+        ev_string = []
+        for stat, ev in self.to_dict().items():
+            if ev > 0 or targets[stat] > 0:
+                ev_label = '%s: %d' % (EvSet.label(stat), ev)
+                if adjustment_amounts:
+                    adjustment = adjustment_amounts.to_dict()[stat]
+                    ev_label += ' (%s%d)' % (
+                        ('' if adjustment < 0 else '+'),
+                        adjustment
+                    )
+                if targets[stat] > 0:
+                    ev_label += f' (Target: {targets[stat]})'
+                ev_string.append(ev_label)
         if not len(ev_string):
             return 'No EVs'
         return '\n'.join(ev_string)
@@ -114,15 +132,6 @@ class EvSet(object):
     def as_modifier_string(self):
         ev_string = ['+%d %s' % (ev, EvSet.label(stat)) for stat, ev in self.to_dict().items() if ev > 0]
         return ', '.join(ev_string)
-
-    def format_with_adjustment_amounts(self, other):
-        ev_string = ['%s: %d (%s%d)' % (
-            EvSet.label(stat),
-            ev,
-            ('' if int(other.to_dict()[stat]) < 0 else '+'),
-            other.to_dict()[stat]
-        ) for stat, ev in self.to_dict().items() if ev > 0 or other.to_dict()[stat] != 0]
-        return '\n'.join(ev_string)
 
     def clone(self):
         return EvSet(**self.to_dict())
@@ -166,9 +175,11 @@ class Pokemon(object):
         import pokedex
         dict['species'] = pokedex.fetch_by_id(dict['species'])
         dict['evs'] = EvSet(**dict['evs'])
+        if 'target_evs' in dict:
+            dict['target_evs'] = EvSet(**dict['target_evs'])
         return cls(**dict)
 
-    def __init__(self, id, species, name=None, item=None, pokerus=False, evs=None):
+    def __init__(self, id, species, name=None, item=None, pokerus=False, evs=None, target_evs=None):
         self.id = int(id)
         self.species = species
         self._name = None
@@ -178,6 +189,7 @@ class Pokemon(object):
         self.item = item
         self.pokerus = pokerus
         self.evs = EvSet() if evs is None else evs
+        self.target_evs = EvSet() if target_evs is None else target_evs
 
     name = property(lambda self: self.get_name(),
                     lambda self, name: self.set_name(name))
@@ -197,7 +209,7 @@ class Pokemon(object):
             raise ValueError("Invalid item '%s'" % item)
         self._item = ITEMS[item] if item is not None else None
         self._itemName = item
-    
+
     def set_effort(self, hp=None, attack=None, defense=None, special_attack=None, special_defense=None, speed=None):
         if hp is not None:
             self.evs.hp = hp
@@ -211,6 +223,20 @@ class Pokemon(object):
             self.evs.special_defense = special_defense
         if speed is not None:
             self.evs.speed = speed
+
+    def set_target(self, hp=None, attack=None, defense=None, special_attack=None, special_defense=None, speed=None):
+        if hp is not None:
+            self.target_evs.hp = hp
+        if attack is not None:
+            self.target_evs.attack = attack
+        if defense is not None:
+            self.target_evs.defense = defense
+        if special_attack is not None:
+            self.target_evs.special_attack = special_attack
+        if special_defense is not None:
+            self.target_evs.special_defense = special_defense
+        if speed is not None:
+            self.target_evs.speed = speed
 
     def __str__(self):
         name = self.name
@@ -248,16 +274,15 @@ class Pokemon(object):
         if self.pokerus:
             evs *= 2
         return evs * number
-       
+
     def get_vitamin_ev_modifier(self, vitamin):
         if vitamin not in VITAMINS:
             raise ValueError("Invalid vitamin '%s'" % vitamin)
         evs = self.evs.clone()
         new_evs = VITAMINS[vitamin](evs)
         return new_evs - evs
-        
 
     def to_dict(self):
         return {'species': self.species.id, 'name': self._name,
                 'pokerus': self.pokerus, 'item': self._itemName,
-                'evs': self.evs.to_dict(), 'id': self.id}
+                'evs': self.evs.to_dict(), 'id': self.id, 'target_evs': self.target_evs.to_dict()}
