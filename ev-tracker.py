@@ -296,9 +296,11 @@ def _build_parser():
     track_parser.set_defaults(func=_cmd_track)
 
     team_parser = subparsers.add_parser('team', help='List the active team Pokemon')
+    team_parser.add_argument('--detailed', action='store_true', default=False)
     team_parser.set_defaults(func=_cmd_team)
 
     box_parser = subparsers.add_parser('box', help='List the boxed Pokemon')
+    box_parser.add_argument('--detailed', action='store_true', default=False)
     box_parser.set_defaults(func=_cmd_box)
 
     deposit_parser = subparsers.add_parser('deposit', help='Send a Pokemon from the team to the box')
