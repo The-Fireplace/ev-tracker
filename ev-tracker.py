@@ -162,7 +162,9 @@ def _cmd_battle(args):
     else:
         pokemon = _tracker.get_pokemon(args.id)
 
-    pokemon.battle(species)
+    count = 1 if args.count is None else args.count
+
+    pokemon.battle(species, count)
 
     print(pokemon.evs)
     print(pokemon)
@@ -221,6 +223,7 @@ def _build_parser():
     battle_parser = subparsers.add_parser('battle', help='Record a battle for a tracked Pokemon')
     battle_parser.add_argument('species', help='Name of number of Pokemon species to battle')
     battle_parser.add_argument('--id', '-i', type=int)
+    battle_parser.add_argument('--count', '-c', type=int)
     battle_parser.set_defaults(func=_cmd_battle)
 
     release_parser = subparsers.add_parser('release', help='Stop tracking a Pokemon')
