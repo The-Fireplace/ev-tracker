@@ -116,7 +116,12 @@ class EvSet(object):
         return ', '.join(ev_string)
 
     def format_with_adjustment_amounts(self, other):
-        ev_string = ['%s: %d (+%d)' % (EvSet.label(stat), ev, other.to_dict()[stat]) for stat, ev in self.to_dict().items() if ev > 0]
+        ev_string = ['%s: %d (%s%d)' % (
+            EvSet.label(stat),
+            ev,
+            ('' if int(other.to_dict()[stat]) < 0 else '+'),
+            other.to_dict()[stat]
+        ) for stat, ev in self.to_dict().items() if ev > 0 or other.to_dict()[stat] != 0]
         return '\n'.join(ev_string)
 
     def clone(self):
