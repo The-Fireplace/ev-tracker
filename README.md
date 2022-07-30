@@ -39,55 +39,69 @@ You can also track a new Pokemon by it's Pokedex number.
 	ev track 610
 	> 2 Axew
 
-The tracker always has an active Pokemon that other commands will operate on
-by default. You can see the current Pokemon using the `active` command, or the
-`list` command and looking for the `*` symbol.
+The tracker always has an active team that is used for the battle command. You can see the current team using the `team` command, or the
+`list` command and looking for the `*` symbol. To see Pokemon that are not in the team, use the `box` command.
 	
-	ev active
-	> No tracked Pokemon is marked as active.
-	> Set an active pokemon using the 'active --switch' command.
+	ev team
+	> No tracked Pokemon is on the team.
+	> Add a pokemon to the team using the 'withdraw <id>' command.
 	
-	ev active --switch=2
+	ev withdraw 2
 	> 2 Axew
 	
 	ev list
 	>   1 Ultrados (Magikarp)
+	> * 2 Axew
+
+    ev withdraw 1
+	> 1 Ultrados (Magikarp)
+	
+	ev list
+	> * 1 Ultrados (Magikarp)
+	> * 2 Axew
+
+You can remove a Pokemon from the team using the `deposit` command:
+
+	ev deposit 2
+	> 2 Axew
+	
+	ev list
+	> * 1 Ultrados (Magikarp)
 	>   2 Axew
 
-You can switch the active Pokemon using the `active` command:
+You can get the full status of the selected Pokemon using the `status` command:
 
-	ev active --switch=1
+	ev status 1
 	> 1 Ultrados (Magikarp)
-
-You can get the full status of the current Pokemon using the `status` command:
-
-	ev status
-	> 1 Ultrados (Magikarp)
+    > Location: Team
 	> Pokerus
 	> No EVs
 
 To record battles and update EV values, use the `battle` command:
 
 	ev battle Lillipup
-	> Battled #506 Lillipup   +1 Attack
-	> 1 Ultrados - +2 Attack
+	> Battled 1 × Lillipup (#506) which has a base EV reward of +1 Attack
+    >
+	> 1 Ultrados (Magikarp) new EVs:
+    > Attack: 2 (+2)
 
-You can also record multiple battles using the `-n` or `--number` option of 
+You can also record multiple battles using the `-c` or `--count` option of 
 the `battle` command:
 
-	ev battle Lillipup -n3
-	> Battled 3 × #506 Lillipup   +1 Attack
-	> 1 Ultrados (Magikarp) - +6 Attack
-	
-	ev status
-	> 1 Ultrados (Magikarp)
-	> Pokerus
-	> Attack: 8
+	ev battle Lillipup -c3
+	> Battled 3 × Lillipup (#506) which has a base EV reward of +1 Attack
+    > 
+	> 1 Ultrados (Magikarp) new EVs:
+    > Attack: 8 (+6)
 
 To update the status of the current Pokemon, use the `update` command:
 	
 	ev update --item="Power Bracer"
 	> 1 Ultrados (Magikarp)
+    > Location: Team
+    > Pokerus
+    > Item: Power Bracer
+    > Attack: 8
 
 As with the other commands, you can refer to a Pokemon species by number:
 	
@@ -97,8 +111,24 @@ As with the other commands, you can refer to a Pokemon species by number:
 	>   #568 Trubbish   +1 Speed
 	
 	ev battle 568
-	> Battled #568 Trubbish  +1 Speed
-	> 1 Ultrados (Magikarp) - +8 Attack, +2 Speed
+	> Battled 1 × Trubbish (#568) which has a base EV reward of +1 Speed
+    > 
+	> 1 Ultrados (Magikarp)
+    > Attack: 8 (+0)
+    > Speed: 2 (+2)
+
+To record vitamins, EV reduction berries, Feathers, or other
+consumables that modify EVs, use the `vitamin` command:
+
+	ev vitamin 1 Carbos
+	> 1 Ultrados (Magikarp) new EVs:
+    > Attack: 8 (+0)
+    > Speed: 12 (+10)
+
+	ev vitamin 1 "Perilous Soup"
+	> 1 Ultrados (Magikarp) new EVs:
+    > Attack: 0 (-8)
+    > Speed: 0 (-12)
 
 To stop tracking a Pokemon, use the `release` command:
 	
@@ -107,10 +137,9 @@ To stop tracking a Pokemon, use the `release` command:
 
 ## EV Calculations
 
-I'm still new to Pokemon EV training, but Effort Values for each battle are
-calculated as such:
+Effort Values for each battle are generally calculated as such:
 
-	ev[stat] = max(ev[stat] + (pokemon.evs[stat] + item.evs[stat]) * pokerus, 255)
+	ev[stat] = min(ev[stat] + (pokemon.evs[stat] + item.evs[stat]) * pokerus, 252)
 
 The total EVs for a Pokemon are also capped at 510.
 
@@ -125,11 +154,10 @@ for more information.
 The tracker file is stored as JSON and is fairly trivial to include in other
 projects, or directly using Javascript.
 
-## Issues, Contact etc.
+## Issues, Contact, etc.
 `ev-tracker` was hacked together very quickly to provide a fairly minimal set
-of functionality for my own personal needs. If you use this and have any 
-issues then please let me know.
+of functionality for my own personal needs.
 
 If you'd like to contribute or provide feedback, then 
-[github](https://github.com/mathewbyrne/ev-tracker) is the best place to do 
+[github](https://github.com/The-Fireplace/ev-tracker) is the best place to do 
 that.
