@@ -54,6 +54,20 @@ class EvSet(object):
             evs.__dict__[stat] *= integer
         return evs
 
+    def capped_add(self, other):
+        for stat in EvSet.STATS:
+            add_amount = other.__dict__[stat]
+            total = self.total_effort()
+            total_max = self.max_total_effort()
+            if total + add_amount > total_max:
+                add_amount = total_max - total
+            stat_amount = self.__dict__[stat]
+            stat_max = self.max_stat_effort()
+            if stat_amount + add_amount > stat_max:
+                add_amount = stat_max - stat_amount
+
+            self.__dict__[stat] += add_amount
+
     def __str__(self):
         ev_string = ['+%d %s' % (ev, EvSet.label(stat)) for stat, ev in self.to_dict().items() if ev > 0]
         return ', '.join(ev_string)
@@ -73,12 +87,18 @@ class EvSet(object):
             dict[stat] = self.__dict__[stat]
         return dict
 
+    def total_effort(self):
+        total = 0
+        for stat in EvSet.STATS:
+            total += self.__dict__[stat]
+        return total
+
     @staticmethod
-    def get_max_stat_effort():
+    def max_stat_effort():
         return 252 if config.instance.smart_iv_cap() else 255
 
     @staticmethod
-    def get_max_total_effort():
+    def max_total_effort():
         return 510
 
 
@@ -165,7 +185,7 @@ class Pokemon(object):
             evs = self.item(evs)
         if self.pokerus:
             evs *= 2
-        self.evs += evs * number
+        self.evs.capped_add(evs * number)
 
     def to_dict(self):
         return {'species': self.species.id, 'name': self._name,
