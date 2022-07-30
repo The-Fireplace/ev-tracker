@@ -137,6 +137,7 @@ def _cmd_team(args):
     detailed_view = args.detailed
     for individual_id in _tracker.get_team():
         pokemon = _tracker.get_pokemon(individual_id)
+        print()
         if detailed_view:
             print(pokemon.status())
         else:
@@ -148,6 +149,7 @@ def _cmd_box(args):
     for individual_id in _tracker.pokemon:
         if not _tracker.on_team(individual_id):
             pokemon = _tracker.get_pokemon(individual_id)
+            print()
             if detailed_view:
                 print(pokemon.status())
             else:
