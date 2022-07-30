@@ -224,7 +224,7 @@ class Pokemon(object):
             status.append('Pokerus')
         if self._itemName:
             status.append(self._itemName)
-        status.append(self.evs.verbose())
+        status.append(str(self.evs))
         return '\n'.join(status)
 
     def listing(self, team):
