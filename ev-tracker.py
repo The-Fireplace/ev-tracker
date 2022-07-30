@@ -232,6 +232,15 @@ def _cmd_set_target(args):
     print(pokemon.evs.format(targets=pokemon.target_evs))
 
 
+def _cmd_clear_target(args):
+    individual_id = args.id
+    pokemon = _tracker.get_pokemon(individual_id)
+    pokemon.clear_target()
+    _save_tracker()
+    print(f'{pokemon} target EVs cleared.')
+    print(pokemon.evs.format())
+
+
 def _cmd_battle(args):
     species = pokedex.search(args.species)
     if args.id is None:
@@ -356,6 +365,10 @@ def _build_parser():
     set_target_parser.add_argument('--special_defense', type=int, help='Special Defense effort')
     set_target_parser.add_argument('--speed', type=int, help='Speed effort')
     set_target_parser.set_defaults(func=_cmd_set_target)
+
+    clear_target_parser = subparsers.add_parser('clear_target', help='Clear a tracked Pokemon\'s target effort values')
+    clear_target_parser.add_argument('id', type=int, help='Pokemon to update')
+    clear_target_parser.set_defaults(func=_cmd_clear_target)
 
     battle_parser = subparsers.add_parser('battle', help='Record a battle for a tracked Pokemon')
     battle_parser.add_argument('species', help='Name of number of Pokemon species to battle')

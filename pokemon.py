@@ -238,6 +238,9 @@ class Pokemon(object):
         if speed is not None:
             self.target_evs.speed = speed
 
+    def clear_target(self):
+        self.target_evs = EvSet()
+
     def __str__(self):
         name = self.name
         if self._name is not None:
