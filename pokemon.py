@@ -99,6 +99,8 @@ class Pokemon(object):
         self.species = species
         self._name = None
         self.name = name
+        self._itemName = item
+        self._item = None
         self.item = item
         self.pokerus = pokerus
         self.evs = EvSet() if evs is None else evs
@@ -120,6 +122,7 @@ class Pokemon(object):
         if item is not None and item not in ITEMS:
             raise ValueError("Invalid item '%s'" % item)
         self._item = ITEMS[item] if item is not None else None
+        self._itemName = item
 
     def __str__(self):
         name = self.name
@@ -134,8 +137,8 @@ class Pokemon(object):
         status = [str(self)]
         if self.pokerus:
             status.append('Pokerus')
-        if self.item:
-            status.append(self.item)
+        if self._itemName:
+            status.append(self._itemName)
         status.append(self.evs.verbose())
         return '\n'.join(status)
 
@@ -158,6 +161,6 @@ class Pokemon(object):
 
     def to_dict(self):
         return {'species': self.species.id, 'name': self._name,
-                'pokerus': self.pokerus, 'item': self.item,
+                'pokerus': self.pokerus, 'item': self._itemName,
                 'evs': self.evs.to_dict(), 'id': self.id}
 
