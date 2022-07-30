@@ -58,7 +58,7 @@ class EvSet(object):
         return ', '.join(ev_string)
 
     def verbose(self):
-        ev_string = ['%s: %d' % (EvSet.label(stat), ev) for stat, ev in self.evs.items()]
+        ev_string = ['%s: %d' % (EvSet.label(stat), ev) for stat, ev in self.to_dict().items() if ev > 0]
         if not len(ev_string):
             return 'No EVs'
         return '\n'.join(ev_string)
