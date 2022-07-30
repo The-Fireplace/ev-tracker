@@ -1,26 +1,24 @@
+import config
 
-GEN_VI_OR_NEWER = True
-IS_SUN_OR_MOON = False
-POWER_ITEM_EFFORT_AMOUNT = 8 if IS_SUN_OR_MOON else 4
+
+def get_power_item_effort():
+    return 8 if config.instance.double_power_items_effort() else 4
+
 
 ITEMS = {
     'Macho Brace': lambda evs: evs * 2,
-    'Power Weight': lambda evs: evs + EvSet(hp=POWER_ITEM_EFFORT_AMOUNT),
-    'Power Bracer': lambda evs: evs + EvSet(attack=POWER_ITEM_EFFORT_AMOUNT),
-    'Power Belt': lambda evs: evs + EvSet(defense=POWER_ITEM_EFFORT_AMOUNT),
-    'Power Lens': lambda evs: evs + EvSet(special_attack=POWER_ITEM_EFFORT_AMOUNT),
-    'Power Band': lambda evs: evs + EvSet(special_defense=POWER_ITEM_EFFORT_AMOUNT),
-    'Power Anklet': lambda evs: evs + EvSet(speed=POWER_ITEM_EFFORT_AMOUNT)
+    'Power Weight': lambda evs: evs + EvSet(hp=get_power_item_effort()),
+    'Power Bracer': lambda evs: evs + EvSet(attack=get_power_item_effort()),
+    'Power Belt': lambda evs: evs + EvSet(defense=get_power_item_effort()),
+    'Power Lens': lambda evs: evs + EvSet(special_attack=get_power_item_effort()),
+    'Power Band': lambda evs: evs + EvSet(special_defense=get_power_item_effort()),
+    'Power Anklet': lambda evs: evs + EvSet(speed=get_power_item_effort())
 }
 
 
 class EvSet(object):
-
     STATS = ['hp', 'attack', 'defense', 'special_attack', 'special_defense', 'speed']
     LABELS = ['HP', 'Attack', 'Defense', 'Special Attack', 'Special Defense', 'Speed']
-
-    MAX_STAT = 252 if GEN_VI_OR_NEWER else 255
-    MAX_EV = 510
 
     @staticmethod
     def label(stat):
@@ -75,6 +73,13 @@ class EvSet(object):
             dict[stat] = self.__dict__[stat]
         return dict
 
+    @staticmethod
+    def get_max_stat_effort():
+        return 252 if config.instance.smart_iv_cap() else 255
+
+    @staticmethod
+    def get_max_total_effort():
+        return 510
 
 
 class Species(object):
@@ -150,11 +155,11 @@ class Pokemon(object):
         return '%s%s' % (padding, self)
 
     def battle(self, species, number=1):
-        '''
-        Alter's a tracked Pokemons EVs to simulate having battled a Species.
+        """
+        Alter's a tracked Pokémon's EVs to simulate having battled a Species.
         These values are altered by pokerus and any item held. The EV
         increment can be multiplied by number to simulate multiple battles.
-        '''
+        """
         evs = species.evs.clone()
         if self.item is not None:
             evs = self.item(evs)
@@ -166,4 +171,3 @@ class Pokemon(object):
         return {'species': self.species.id, 'name': self._name,
                 'pokerus': self.pokerus, 'item': self._itemName,
                 'evs': self.evs.to_dict(), 'id': self.id}
-

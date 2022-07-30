@@ -2,17 +2,15 @@
 # coding=utf-8
 
 
-import os
 import argparse
 import json
+import os
 from shutil import copyfile
 
-from pokemon import Pokemon, EvSet
+import config
 import pokedex
-
-
-TRACKER_FILENAME = '.ev-tracker'
-TRACKER_PATH = os.path.expanduser(os.path.join('~', TRACKER_FILENAME))
+from config import Config
+from pokemon import Pokemon
 
 
 class Tracker(object):
@@ -51,6 +49,7 @@ class Tracker(object):
     def __init__(self):
         self._active = None
         self.counter = 1
+        self.filename = None
 
     active = property(lambda self: self.get_active(),
                       lambda self, pokemon: self.set_active(pokemon))
@@ -105,6 +104,7 @@ class NoTrackedPokemon(Exception):
     Raised when an id is requested from a Tracker but the Tracker does not
     have a Pokemon with the provided id.
     """
+
     def __init__(self, id):
         super(NoTrackedPokemon, self).__init__()
         self.id = id
@@ -115,7 +115,7 @@ _tracker = None
 
 def _save_tracker():
     if os.path.exists(_tracker.filename):
-        copyfile(_tracker.filename,  _tracker.filename + '.bak')  # Create backup
+        copyfile(_tracker.filename, _tracker.filename + '.bak')  # Create backup
     Tracker.to_json(_tracker)
 
 
@@ -184,12 +184,11 @@ def _build_parser():
                                                  ''')
     parser.add_argument('--infile', '-i',
                         dest='filename',
-                        default=TRACKER_PATH,
                         help='''
                              Optional location of the file to save tracking
                              information to. This defaults to %s in your
                              home directory
-                             ''' % TRACKER_FILENAME)
+                             ''' % config.DEFAULT_TRACKER_FILENAME)
 
     subparsers = parser.add_subparsers()
 
@@ -203,7 +202,8 @@ def _build_parser():
     track_parser = subparsers.add_parser('track', help='Add a Pokemon to track')
     track_parser.add_argument('species', help='Name of number of Pokemon species to track')
     track_parser.add_argument('--name', '-n', help='Nickname of Pokemon')
-    track_parser.add_argument('--pokerus', '-p', action='store_true', default=False, help='Indicates the given Pokemon has Pokerus')
+    track_parser.add_argument('--pokerus', '-p', action='store_true', default=False,
+                              help='Indicates the given Pokemon has Pokerus')
     track_parser.add_argument('--item', '-i')
     track_parser.set_defaults(func=_cmd_track)
 
@@ -233,7 +233,10 @@ def _build_parser():
 if __name__ == '__main__':
     try:
         args = _build_parser().parse_args()
-        _tracker = Tracker.from_json(args.filename)
+        config_instance = Config.from_json(args.filename)
+        config.instance = config_instance
+        Config.to_json(config_instance)
+        _tracker = Tracker.from_json(config_instance.filename)
         args.func(args)
     except pokedex.NoSuchSpecies as e:
         print("No match found for '%s'." % e.identifier)
@@ -246,4 +249,3 @@ if __name__ == '__main__':
         print("Set an active pokemon using the 'active --switch' command.")
     except NoTrackedPokemon as e:
         print("No tracked Pokemon with id '%d' was found." % e.id)
-
