@@ -20,25 +20,25 @@ ITEMS = {
 }
 
 VITAMINS = {
-    'HP Up': lambda evs: evs.capped_add(EvSet(hp=10)),
-    'Protein': lambda evs: evs.capped_add(EvSet(attack=10)),
-    'Iron': lambda evs: evs.capped_add(EvSet(defense=10)),
-    'Calcium': lambda evs: evs.capped_add(EvSet(special_attack=10)),
-    'Zinc': lambda evs: evs.capped_add(EvSet(special_defense=10)),
-    'Carbos': lambda evs: evs.capped_add(EvSet(speed=10)),
-    'Health Feather': lambda evs: evs.capped_add(EvSet(hp=1)),
-    'Muscle Feather': lambda evs: evs.capped_add(EvSet(attack=1)),
-    'Resist Feather': lambda evs: evs.capped_add(EvSet(defense=1)),
-    'Genius Feather': lambda evs: evs.capped_add(EvSet(special_attack=1)),
-    'Clever Feather': lambda evs: evs.capped_add(EvSet(special_defense=1)),
-    'Swift Feather': lambda evs: evs.capped_add(EvSet(speed=1)),
-    'Pomeg Berry': lambda evs: evs.capped_subtract(EvSet(hp=get_berry_reduction_amount(evs.hp))),
-    'Kelpsy Berry': lambda evs: evs.capped_subtract(EvSet(attack=get_berry_reduction_amount(evs.attack))),
-    'Qualot Berry': lambda evs: evs.capped_subtract(EvSet(defense=get_berry_reduction_amount(evs.defense))),
-    'Hondew Berry': lambda evs: evs.capped_subtract(EvSet(special_attack=get_berry_reduction_amount(evs.special_attack))),
-    'Grepa Berry': lambda evs: evs.capped_subtract(EvSet(special_defense=get_berry_reduction_amount(evs.special_defense))),
-    'Tamato Berry': lambda evs: evs.capped_subtract(EvSet(speed=get_berry_reduction_amount(evs.speed))),
-    'Perilous Soup': lambda evs: evs.__imul__(0),
+    'HP Up': lambda evs: evs + EvSet(hp=10),
+    'Protein': lambda evs: evs + EvSet(attack=10),
+    'Iron': lambda evs: evs + EvSet(defense=10),
+    'Calcium': lambda evs: evs + EvSet(special_attack=10),
+    'Zinc': lambda evs: evs + EvSet(special_defense=10),
+    'Carbos': lambda evs: evs + EvSet(speed=10),
+    'Health Feather': lambda evs: evs + EvSet(hp=1),
+    'Muscle Feather': lambda evs: evs + EvSet(attack=1),
+    'Resist Feather': lambda evs: evs + EvSet(defense=1),
+    'Genius Feather': lambda evs: evs + EvSet(special_attack=1),
+    'Clever Feather': lambda evs: evs + EvSet(special_defense=1),
+    'Swift Feather': lambda evs: evs + EvSet(speed=1),
+    'Pomeg Berry': lambda evs: evs - EvSet(hp=get_berry_reduction_amount(evs.hp)),
+    'Kelpsy Berry': lambda evs: evs - EvSet(attack=get_berry_reduction_amount(evs.attack)),
+    'Qualot Berry': lambda evs: evs - EvSet(defense=get_berry_reduction_amount(evs.defense)),
+    'Hondew Berry': lambda evs: evs - EvSet(special_attack=get_berry_reduction_amount(evs.special_attack)),
+    'Grepa Berry': lambda evs: evs - EvSet(special_defense=get_berry_reduction_amount(evs.special_defense)),
+    'Tamato Berry': lambda evs: evs - EvSet(speed=get_berry_reduction_amount(evs.speed)),
+    'Perilous Soup': lambda evs: evs * 0,
 }
 
 
@@ -69,6 +69,16 @@ class EvSet(object):
         evs += other
         return evs
 
+    def __isub__(self, other):
+        for stat in EvSet.STATS:
+            self.__dict__[stat] -= other.__dict__[stat]
+        return self
+
+    def __sub__(self, other):
+        evs = self.clone()
+        evs -= other
+        return evs
+
     def __imul__(self, integer):
         for stat in EvSet.STATS:
             self.__dict__[stat] *= integer
@@ -90,17 +100,10 @@ class EvSet(object):
             stat_max = self.max_stat_effort()
             if stat_amount + add_amount > stat_max:
                 add_amount = stat_max - stat_amount
+            elif stat_amount + add_amount < 0:
+                add_amount = -stat_amount
 
             self.__dict__[stat] += add_amount
-
-    def capped_subtract(self, other):
-        for stat in EvSet.STATS:
-            subtract_amount = other.__dict__[stat]
-            stat_amount = self.__dict__[stat]
-            if stat_amount - subtract_amount < 0:
-                subtract_amount = stat_amount
-
-            self.__dict__[stat] -= subtract_amount
 
     def __str__(self):
         ev_string = ['%s: %d' % (EvSet.label(stat), ev) for stat, ev in self.to_dict().items() if ev > 0]
@@ -228,7 +231,7 @@ class Pokemon(object):
         padding = '* ' if self.id in team else '  '
         return '%s%s' % (padding, self)
 
-    def get_battle_ev_reward(self, species, number=1):
+    def get_battle_ev_modifier(self, species, number=1):
         """
         Alter's a tracked Pokémon's EVs to simulate having battled a Species.
         These values are altered by pokerus and any item held. The EV
@@ -241,10 +244,12 @@ class Pokemon(object):
             evs *= 2
         return evs * number
        
-    def vitamin(self, vitamin):
+    def get_vitamin_ev_modifier(self, vitamin):
         if vitamin not in VITAMINS:
             raise ValueError("Invalid vitamin '%s'" % vitamin)
-        VITAMINS[vitamin](self.evs)
+        evs = self.evs.clone()
+        new_evs = VITAMINS[vitamin](evs)
+        return new_evs - evs
         
 
     def to_dict(self):

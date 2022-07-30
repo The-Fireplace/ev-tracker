@@ -205,10 +205,11 @@ def _cmd_update(args):
 def _cmd_vitamin(args):
     individual_id = args.id
     pokemon = _tracker.get_pokemon(individual_id)
-    pokemon.vitamin(args.vitamin)
+    modifier = pokemon.get_vitamin_ev_modifier(args.vitamin)
+    pokemon.evs.capped_add(modifier)
     _save_tracker()
-    print(pokemon)
-    print(pokemon.evs)
+    print(f'{pokemon} new EVs:')
+    print(pokemon.evs.format_with_adjustment_amounts(modifier))
 
 
 def _cmd_set_effort(args):
@@ -217,7 +218,7 @@ def _cmd_set_effort(args):
     pokemon.set_effort(hp=args.hp, attack=args.attack, defense=args.defense, special_attack=args.special_attack,
                        special_defense=args.special_defense, speed=args.speed)
     _save_tracker()
-    print(pokemon)
+    print(f'{pokemon} new EVs:')
     print(pokemon.evs)
 
 
@@ -233,16 +234,15 @@ def _cmd_battle(args):
     count = 1 if args.count is None else args.count
 
     print(f'Battled {count} × {species.name} (#{species.id}) '
-          + f'which has a base EV reward of {species.evs.as_modifier_string()}\n')
+          + f'which has a base EV reward of {species.evs.as_modifier_string()}')
 
     for individual_id in battling_ids:
         pokemon = _tracker.get_pokemon(individual_id)
-        reward = pokemon.get_battle_ev_reward(species, count)
-        pokemon.evs.capped_add(reward)
+        modifier = pokemon.get_battle_ev_modifier(species, count)
+        pokemon.evs.capped_add(modifier)
 
-        print(f'{pokemon} new EVs:')
-        print(pokemon.evs.format_with_adjustment_amounts(reward))
-        print()
+        print(f'\n{pokemon} new EVs:')
+        print(pokemon.evs.format_with_adjustment_amounts(modifier))
     _save_tracker()
 
 
@@ -356,6 +356,7 @@ if __name__ == '__main__':
         Config.to_json(config_instance)
         _tracker = Tracker.from_json(config_instance.filename)
         args.func(args)
+        print()
     except pokedex.NoSuchSpecies as e:
         print("No match found for '%s'." % e.identifier)
         if isinstance(e, pokedex.AmbiguousSpecies):
