@@ -198,6 +198,16 @@ def _cmd_update(args):
     _save_tracker()
 
 
+def _cmd_set_effort(args):
+    individual_id = args.id
+    pokemon = _tracker.get_pokemon(individual_id)
+    pokemon.set_effort(hp=args.hp, attack=args.attack, defense=args.defense, special_attack=args.special_attack,
+                       special_defense=args.special_defense, speed=args.speed)
+    _save_tracker()
+    print(pokemon)
+    print(pokemon.evs)
+
+
 def _cmd_battle(args):
     species = pokedex.search(args.species)
     if args.id is None:
@@ -291,6 +301,16 @@ def _build_parser():
     update_parser.add_argument('--withdraw', '-w', action='store_true', default=False,
                                help='Add the pokemon to the team')
     update_parser.set_defaults(func=_cmd_update)
+
+    set_effort_parser = subparsers.add_parser('set_effort', help='Update a tracked Pokemon\'s effort values')
+    set_effort_parser.add_argument('id', type=int, help='Pokemon to update')
+    set_effort_parser.add_argument('--hp', type=int, help='HP effort')
+    set_effort_parser.add_argument('--attack', type=int, help='Attack effort')
+    set_effort_parser.add_argument('--defense', type=int, help='Defense effort')
+    set_effort_parser.add_argument('--special_attack', type=int, help='Special Attack effort')
+    set_effort_parser.add_argument('--special_defense', type=int, help='Special Defense effort')
+    set_effort_parser.add_argument('--speed', type=int, help='Speed effort')
+    set_effort_parser.set_defaults(func=_cmd_set_effort)
 
     battle_parser = subparsers.add_parser('battle', help='Record a battle for a tracked Pokemon')
     battle_parser.add_argument('species', help='Name of number of Pokemon species to battle')

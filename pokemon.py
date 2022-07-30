@@ -150,6 +150,20 @@ class Pokemon(object):
             raise ValueError("Invalid item '%s'" % item)
         self._item = ITEMS[item] if item is not None else None
         self._itemName = item
+    
+    def set_effort(self, hp=None, attack=None, defense=None, special_attack=None, special_defense=None, speed=None):
+        if hp is not None:
+            self.evs.hp = hp
+        if attack is not None:
+            self.evs.attack = attack
+        if defense is not None:
+            self.evs.defense = defense
+        if special_attack is not None:
+            self.evs.special_attack = special_attack
+        if special_defense is not None:
+            self.evs.special_defense = special_defense
+        if speed is not None:
+            self.evs.speed = speed
 
     def __str__(self):
         name = self.name
