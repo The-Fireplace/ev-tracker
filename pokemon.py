@@ -1,13 +1,16 @@
 
+GEN_VI_OR_NEWER = True
+IS_SUN_OR_MOON = False
+POWER_ITEM_EFFORT_AMOUNT = 8 if IS_SUN_OR_MOON else 4
 
 ITEMS = {
     'Macho Brace': lambda evs: evs * 2,
-    'Power Weight': lambda evs: evs + EvSet(hp=4),
-    'Power Bracer': lambda evs: evs + EvSet(attack=4),
-    'Power Belt': lambda evs: evs + EvSet(defense=4),
-    'Power Lens': lambda evs: evs + EvSet(special_attack=4),
-    'Power Band': lambda evs: evs + EvSet(special_defense=4),
-    'Power Anklet': lambda evs: evs + EvSet(speed=4)
+    'Power Weight': lambda evs: evs + EvSet(hp=POWER_ITEM_EFFORT_AMOUNT),
+    'Power Bracer': lambda evs: evs + EvSet(attack=POWER_ITEM_EFFORT_AMOUNT),
+    'Power Belt': lambda evs: evs + EvSet(defense=POWER_ITEM_EFFORT_AMOUNT),
+    'Power Lens': lambda evs: evs + EvSet(special_attack=POWER_ITEM_EFFORT_AMOUNT),
+    'Power Band': lambda evs: evs + EvSet(special_defense=POWER_ITEM_EFFORT_AMOUNT),
+    'Power Anklet': lambda evs: evs + EvSet(speed=POWER_ITEM_EFFORT_AMOUNT)
 }
 
 
@@ -16,7 +19,7 @@ class EvSet(object):
     STATS = ['hp', 'attack', 'defense', 'special_attack', 'special_defense', 'speed']
     LABELS = ['HP', 'Attack', 'Defense', 'Special Attack', 'Special Defense', 'Speed']
 
-    MAX_STAT = 255
+    MAX_STAT = 252 if GEN_VI_OR_NEWER else 255
     MAX_EV = 510
 
     @staticmethod
