@@ -5,6 +5,7 @@
 import argparse
 import json
 import os
+import shlex
 from shutil import copyfile
 
 import config
@@ -385,9 +386,9 @@ def _build_parser():
     return parser
 
 
-if __name__ == '__main__':
+def execute_command(args):
+    global _tracker
     try:
-        args = _build_parser().parse_args()
         config_instance = Config.from_json(args.filename)
         config.instance = config_instance
         Config.to_json(config_instance)
@@ -405,3 +406,20 @@ if __name__ == '__main__':
         print("Add a pokemon to the team using the 'withdraw <id>' command.")
     except NoTrackedPokemon as e:
         print("No tracked Pokemon with id '%d' was found." % e.id)
+
+
+def repl() -> None:
+    try:
+        while True:
+            try:
+                _in = input(">> ")
+                args = _build_parser().parse_args(shlex.split(_in))
+                execute_command(args)
+            except Exception as e:
+                print(f"Error: {e}")
+    except KeyboardInterrupt as e:
+        print("\nExiting...")
+
+
+if __name__ == '__main__':
+    repl()
