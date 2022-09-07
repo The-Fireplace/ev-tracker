@@ -422,6 +422,8 @@ def repl() -> None:
         while True:
             try:
                 _in = input(">> ")
+                if _in.lower() == "exit":
+                    break
                 args = _build_parser().parse_args(shlex.split(_in))
                 execute_command(args)
             except Exception as e:
