@@ -6,6 +6,15 @@ import argparse
 import json
 import os
 import shlex
+try:
+    import readline
+except ModuleNotFoundError as _:
+    try:
+        from pyreadline3 import Readline
+
+        readline = Readline()
+    except ModuleNotFoundError as _:
+        print("readline module not available, command history may not be saved")
 from shutil import copyfile
 
 import config
