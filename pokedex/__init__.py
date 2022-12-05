@@ -60,9 +60,10 @@ class AmbiguousSpecies(NoSuchSpecies):
 class AmbiguousForm(NoSuchSpecies):
     """Raised when several forms are found for a Pokemon name search."""
 
-    def __init__(self, identifier, matches):
-        super(AmbiguousForm, self).__init__(identifier)
+    def __init__(self, full_query: str, query_includes_form: bool, matches: list[str]):
+        super(AmbiguousForm, self).__init__(full_query)
         self.matches = matches
+        self.has_queried_form = query_includes_form
 
 
 def _name_list():
@@ -163,4 +164,4 @@ def search(search_query: str | int):
     for form_id, species in species_list.items():
         form_list.append(search_query + ' (' + species.form + ')')
 
-    raise AmbiguousForm(original_query, form_list)
+    raise AmbiguousForm(original_query, form != '', form_list)

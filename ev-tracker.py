@@ -412,12 +412,17 @@ def execute_command(args):
         print()
     except pokedex.NoSuchSpecies as e:
         print("No match found for '%s'." % e.identifier)
-        if isinstance(e, pokedex.AmbiguousSpecies) or isinstance(e, pokedex.AmbiguousForm):
+        if isinstance(e, pokedex.AmbiguousSpecies):
             print("Did you mean:")
             for match in e.matches:
-                if match.find(' ') > -1:
-                    match = '"' + match + '"'
                 print("  %s" % match)
+        if isinstance(e, pokedex.AmbiguousForm):
+            if e.has_queried_form:
+                print("Did you mean:")
+            else:
+                print("Please use a form with this species:")
+            for match in e.matches:
+                print('  "%s"' % match)
     except NoActivePokemon:
         print("No tracked Pokemon is on the team.")
         print("Add a pokemon to the team using the 'withdraw <id>' command.")
