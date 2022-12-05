@@ -291,12 +291,15 @@ def _cmd_release(args):
 
 
 def _build_parser():
-    parser = argparse.ArgumentParser(prog='ev',
-                                     description='''
-                                                 A small utility for keeping
-                                                 track of Effort Values while
-                                                 training Pokemon.
-                                                 ''')
+    parser = argparse.ArgumentParser(
+        prog='ev',
+        description='''
+            A small utility for keeping
+            track of Effort Values while
+            training Pokemon.
+        ''',
+        exit_on_error=False,
+    )
     parser.add_argument('--infile', '-i',
                         dest='filename',
                         help='''
@@ -439,14 +442,17 @@ def repl() -> None:
         except KeyboardInterrupt:
             print("\nExiting...")
             break
+
+        # noinspection PyBroadException
         try:
             args = _build_parser().parse_args(shlex.split(_in))
+        except BaseException:
+            continue
+        try:
             execute_command(args)
         except Exception as e:
             print(f"Error: {e}\n")
-        finally:
-            # Keeps the exception from killing the repl
-            continue
+            break
 
 
 if __name__ == '__main__':
