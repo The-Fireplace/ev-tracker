@@ -72,24 +72,25 @@ class Tracker(object):
     def get_team(self):
         return self._team
 
-    def get_pokemon(self, id):
-        if id not in self.pokemon:
-            raise NoTrackedPokemon(id)
-        return self.pokemon[id]
+    def get_pokemon(self, individual_id):
+        if individual_id not in self.pokemon:
+            raise NoTrackedPokemon(individual_id)
+        return self.pokemon[individual_id]
 
     def unique_id(self):
         while self.counter in self.pokemon:
             self.counter += 1
         return self.counter
 
-    def track(self, pokemon):
-        self.pokemon[pokemon.id] = pokemon
+    def track(self, pokemon: Pokemon):
+        self.pokemon[pokemon.get_individual_id()] = pokemon
 
-    def untrack(self, pokemon):
-        del self.pokemon[pokemon.id]
-        pokemon.id = None
-        if self.on_team(pokemon.id):
-            self.remove_from_team(pokemon.id)
+    def untrack(self, pokemon: Pokemon):
+        individual_id = pokemon.get_individual_id()
+        del self.pokemon[individual_id]
+        if self.on_team(individual_id):
+            self.remove_from_team(individual_id)
+        pokemon.delete()
 
     def __str__(self):
         if len(self.pokemon):

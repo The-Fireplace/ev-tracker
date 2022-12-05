@@ -209,6 +209,12 @@ class Pokemon(object):
         self.evs = EvSet() if evs is None else evs
         self.target_evs = EvSet() if target_evs is None else target_evs
 
+    def get_individual_id(self) -> int:
+        return self.id
+
+    def delete(self):
+        self.id = None
+
     name = property(lambda self: self.get_name(),
                     lambda self, name: self.set_name(name))
 
