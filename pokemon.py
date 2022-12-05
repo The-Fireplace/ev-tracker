@@ -159,13 +159,15 @@ class EvSet(object):
 
 class Species(object):
 
-    def __init__(self, id, name, evs=None):
+    def __init__(self, id, name, form, evs=None):
         self.id = int(id)
         self.name = name
+        self.form = form
         self.evs = EvSet() if evs is None else evs
 
     def __str__(self):
-        return '#%03d %-10s %s' % (self.id, self.name, self.evs.as_modifier_string())
+        formatted_form = ' (' + self.form + ')' if self.form else ''
+        return '#%03d %-10s %s' % (self.id, self.name + formatted_form, self.evs.as_modifier_string())
 
 
 class Pokemon(object):
@@ -173,15 +175,31 @@ class Pokemon(object):
     @classmethod
     def from_dict(cls, dict):
         import pokedex
-        dict['species'] = pokedex.fetch_by_id(dict['species'])
+        if 'form' in dict:
+            form = dict['form']
+            dict['species'] = pokedex.search(dict['species'] + f' ({form})')
+        else:
+            dict['species'] = list(pokedex.fetch_by_id(dict['species']).values())[0]
+            dict['form'] = dict['species'].form
         dict['evs'] = EvSet(**dict['evs'])
         if 'target_evs' in dict:
             dict['target_evs'] = EvSet(**dict['target_evs'])
         return cls(**dict)
 
-    def __init__(self, id, species, name=None, item=None, pokerus=False, evs=None, target_evs=None):
+    def __init__(
+            self,
+            id: int,
+            species: Species,
+            form: str = '',
+            name: str = None,
+            item: str = None,
+            pokerus: bool = False,
+            evs: EvSet = None,
+            target_evs: EvSet = None
+    ):
         self.id = int(id)
         self.species = species
+        self.form = form
         self._name = None
         self.name = name
         self._itemName = item

@@ -112,9 +112,9 @@ class NoTrackedPokemon(Exception):
     have a Pokemon with the provided id.
     """
 
-    def __init__(self, id):
+    def __init__(self, individual_id):
         super(NoTrackedPokemon, self).__init__()
-        self.id = id
+        self.id = individual_id
 
 
 _tracker: Tracker | None = None
@@ -136,8 +136,14 @@ def _cmd_list(args):
 
 def _cmd_track(args):
     species = pokedex.search(args.species)
-    pokemon = Pokemon(id=_tracker.unique_id(), species=species,
-                      name=args.name, item=args.item, pokerus=args.pokerus)
+    pokemon = Pokemon(
+        id=_tracker.unique_id(),
+        species=species,
+        form=species.form,
+        name=args.name,
+        item=args.item,
+        pokerus=args.pokerus
+    )
     _tracker.track(pokemon)
     _save_tracker()
     print(pokemon)
@@ -406,9 +412,11 @@ def execute_command(args):
         print()
     except pokedex.NoSuchSpecies as e:
         print("No match found for '%s'." % e.identifier)
-        if isinstance(e, pokedex.AmbiguousSpecies):
+        if isinstance(e, pokedex.AmbiguousSpecies) or isinstance(e, pokedex.AmbiguousForm):
             print("Did you mean:")
             for match in e.matches:
+                if match.find(' ') > -1:
+                    match = '"' + match + '"'
                 print("  %s" % match)
     except NoActivePokemon:
         print("No tracked Pokemon is on the team.")
