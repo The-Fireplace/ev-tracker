@@ -215,12 +215,6 @@ class Pokemon(object):
     def delete(self):
         self.id = None
 
-    name = property(lambda self: self.get_name(),
-                    lambda self, name: self.set_name(name))
-
-    item = property(lambda self: self._item,
-                    lambda self, item: self.set_item(item))
-
     def get_name(self):
         return self.species.name if self._name is None else self._name
 
@@ -228,11 +222,15 @@ class Pokemon(object):
         if name is not None and len(name.strip()) > 0:
             self._name = name.strip()
 
+    name = property(get_name, set_name)
+
     def set_item(self, item):
         if item is not None and item not in ITEMS:
             raise ValueError("Invalid item '%s'" % item)
         self._item = ITEMS[item] if item is not None else None
         self._itemName = item
+
+    item = property(lambda self: self._item, set_item)
 
     def set_effort(self, hp=None, attack=None, defense=None, special_attack=None, special_defense=None, speed=None):
         if hp is not None:
