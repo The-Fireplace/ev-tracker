@@ -418,18 +418,22 @@ def execute_command(args):
 
 
 def repl() -> None:
-    try:
-        while True:
-            try:
-                _in = input(">> ")
-                if _in.lower() == "exit":
-                    break
-                args = _build_parser().parse_args(shlex.split(_in))
-                execute_command(args)
-            except Exception as e:
-                print(f"Error: {e}")
-    except KeyboardInterrupt as e:
-        print("\nExiting...")
+    while True:
+        try:
+            _in = input(">> ")
+            if _in.lower() == "exit":
+                break
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            break
+        try:
+            args = _build_parser().parse_args(shlex.split(_in))
+            execute_command(args)
+        except Exception as e:
+            print(f"Error: {e}\n")
+        finally:
+            # Keeps the exception from killing the repl
+            continue
 
 
 if __name__ == '__main__':
