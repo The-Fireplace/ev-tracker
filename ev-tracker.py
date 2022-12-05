@@ -117,7 +117,7 @@ class NoTrackedPokemon(Exception):
         self.id = id
 
 
-_tracker = None
+_tracker: Tracker | None = None
 
 
 def _save_tracker():

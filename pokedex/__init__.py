@@ -1,6 +1,6 @@
-'''
+"""
 A module for retrieving data about Pokemon species.
-'''
+"""
 
 import os
 import sqlite3
@@ -18,16 +18,16 @@ _connection.row_factory = sqlite3.Row
 
 
 class _SpeciesCache(object):
-    '''
+    """
     A very simple caching mechanism for database species records. There are
     kept in memory until requested again.
-    '''
+    """
     def __init__(self):
         self._cache = {'id': {}, 'name': {}}
         self.names = None
     
     def contains(self, field, value):
-        return (field in self._cache and value in self._cache[field])
+        return field in self._cache and value in self._cache[field]
     
     def get(self, field, value):
         return self._cache[field][value]
@@ -41,14 +41,16 @@ _cache = _SpeciesCache()
 
 
 class NoSuchSpecies(Exception):
-    '''Raised when a search for a Pokemon species fails.'''
+    """Raised when a search for a Pokemon species fails."""
+
     def __init__(self, identifier):
         super(NoSuchSpecies, self).__init__()
         self.identifier = identifier
 
 
 class AmbiguousSpecies(NoSuchSpecies):
-    '''Raised when several matches are found for a Pokemon name search.'''
+    """Raised when several matches are found for a Pokemon name search."""
+
     def __init__(self, identifier, matches):
         super(AmbiguousSpecies, self).__init__(identifier)
         self.matches = [fetch_by_name(match) for match in matches]
