@@ -9,11 +9,11 @@ CONFIG_FILENAME = 'config.json'
 class Config(object):
     def __init__(self):
         self.filename = None
-        self.generation = 8
-        self.is_sun_or_moon = False
+        self.generation = 9
+        self.is_bdsp = False
 
     def double_power_items_effort(self):
-        return self.is_sun_or_moon
+        return self.generation > 6 and not self.is_bdsp
 
     def smart_iv_cap(self):
         return self.generation > 6
@@ -27,16 +27,16 @@ class Config(object):
         try:
             fp = open(CONFIG_FILENAME, 'r')
             data = json.load(fp)
-            if filename is None and data['filename']:
+            if filename is None and 'filename' in data:
                 config.filename = data['filename']
             elif filename is None:
                 config.filename = DEFAULT_TRACKER_PATH
             else:
                 config.filename = filename
-            if data['generation']:
+            if 'generation' in data:
                 config.generation = data['generation']
-            if data['is_sun_or_moon']:
-                config.is_sun_or_moon = data['is_sun_or_moon']
+            if 'is_bdsp' in data:
+                config.is_bdsp = data['is_bdsp']
         except IOError:
             if filename is None:
                 config.filename = DEFAULT_TRACKER_PATH
@@ -51,7 +51,7 @@ class Config(object):
         data = {
             'filename': config.filename,
             'generation': config.generation,
-            'is_sun_or_moon': config.is_sun_or_moon,
+            'is_bdsp': config.is_bdsp,
         }
 
         json.dump(data, fp)
