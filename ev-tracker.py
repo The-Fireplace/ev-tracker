@@ -37,6 +37,8 @@ class Tracker(object):
                 tracker.track(pokemon)
             if 'team' in data:
                 tracker._team = set(data['team'])
+            if 'archive' in data:
+                tracker._archive = set(data['archive'])
         except IOError:
             pass  # Ignore missing tracking file.
 
@@ -47,7 +49,8 @@ class Tracker(object):
         fp = open(filename, 'w')
         data = {
             'team': sorted(self._team),
-            'pokemon': [pokemon.to_dict() for pokemon in self.pokemon.values()]
+            'archive': sorted(self._archive),
+            'pokemon': [pokemon.to_dict() for pokemon in self.pokemon.values()],
         }
 
         json.dump(data, fp)
@@ -57,6 +60,7 @@ class Tracker(object):
 
     def __init__(self):
         self._team = set()
+        self._archive = set()
         self.counter = 1
         self.filename = None
 
@@ -67,10 +71,24 @@ class Tracker(object):
         return individual_id in self._team
 
     def remove_from_team(self, individual_id):
-        self._team.remove(individual_id)
+        if self.on_team(individual_id):
+            self._team.remove(individual_id)
 
     def get_team(self):
         return self._team
+
+    def add_to_archive(self, individual_id):
+        self._archive.add(individual_id)
+
+    def in_archive(self, individual_id):
+        return individual_id in self._archive
+
+    def remove_from_archive(self, individual_id):
+        if self.in_archive(individual_id):
+            self._archive.remove(individual_id)
+
+    def get_archive(self):
+        return self._archive
 
     def get_pokemon(self, individual_id):
         if individual_id not in self.pokemon:
@@ -88,8 +106,8 @@ class Tracker(object):
     def untrack(self, pokemon: Pokemon):
         individual_id = pokemon.get_individual_id()
         del self.pokemon[individual_id]
-        if self.on_team(individual_id):
-            self.remove_from_team(individual_id)
+        self.remove_from_team(individual_id)
+        self.remove_from_archive(individual_id)
         pokemon.delete()
 
     def __str__(self):
@@ -161,10 +179,21 @@ def _cmd_team(args):
             print(pokemon)
 
 
+def _cmd_view_archive(args):
+    detailed_view = args.detailed
+    for individual_id in _tracker.get_archive():
+        pokemon = _tracker.get_pokemon(individual_id)
+        print()
+        if detailed_view:
+            print(pokemon.status())
+        else:
+            print(pokemon)
+
+
 def _cmd_box(args):
     detailed_view = args.detailed
     for individual_id in _tracker.pokemon:
-        if not _tracker.on_team(individual_id):
+        if not _tracker.on_team(individual_id) and not _tracker.in_archive(individual_id):
             pokemon = _tracker.get_pokemon(individual_id)
             print()
             if detailed_view:
@@ -176,6 +205,15 @@ def _cmd_box(args):
 def _cmd_deposit(args):
     individual_id = args.id
     _tracker.remove_from_team(individual_id)
+    _tracker.remove_from_archive(individual_id)
+    _save_tracker()
+    print(_tracker.get_pokemon(individual_id))
+
+
+def _cmd_archive(args):
+    individual_id = args.id
+    _tracker.remove_from_team(individual_id)
+    _tracker.add_to_archive(individual_id)
     _save_tracker()
     print(_tracker.get_pokemon(individual_id))
 
@@ -183,6 +221,7 @@ def _cmd_deposit(args):
 def _cmd_withdraw(args):
     individual_id = args.id
     _tracker.add_to_team(individual_id)
+    _tracker.remove_from_archive(individual_id)
     _save_tracker()
     print(_tracker.get_pokemon(individual_id))
 
@@ -190,8 +229,18 @@ def _cmd_withdraw(args):
 def _cmd_status(args):
     individual_id = args.id
     pokemon = _tracker.get_pokemon(individual_id)
-    location = 'Team' if _tracker.on_team(individual_id) else 'Box'
+    location = get_location(individual_id)
     print(pokemon.status(location))
+
+
+def get_location(individual_id):
+    if _tracker.on_team(individual_id):
+        location = 'Team'
+    elif _tracker.in_archive(individual_id):
+        location = 'Archive'
+    else:
+        location = 'Box'
+    return location
 
 
 def _cmd_update(args):
@@ -214,10 +263,15 @@ def _cmd_update(args):
         pokemon.name = None
     if args.deposit is True:
         _tracker.remove_from_team(individual_id)
+        _tracker.remove_from_archive(individual_id)
     if args.withdraw is True:
         _tracker.add_to_team(individual_id)
+        _tracker.remove_from_archive(individual_id)
+    if args.archive is True:
+        _tracker.add_to_archive(individual_id)
+        _tracker.remove_from_team(individual_id)
     _save_tracker()
-    location = 'Team' if _tracker.on_team(individual_id) else 'Box'
+    location = get_location(individual_id)
     print(pokemon.status(location))
 
 
@@ -334,13 +388,21 @@ def _build_parser():
     box_parser.add_argument('--detailed', action='store_true', default=False)
     box_parser.set_defaults(func=_cmd_box)
 
-    deposit_parser = subparsers.add_parser('deposit', help='Send a Pokemon from the team to the box')
+    view_archive_parser = subparsers.add_parser('view_archive', help='List the archived Pokemon')
+    view_archive_parser.add_argument('--detailed', action='store_true', default=False)
+    view_archive_parser.set_defaults(func=_cmd_view_archive)
+
+    deposit_parser = subparsers.add_parser('deposit', help='Send a Pokemon to the box')
     deposit_parser.add_argument('id', type=int, help='Pokemon to deposit')
     deposit_parser.set_defaults(func=_cmd_deposit)
 
-    deposit_parser = subparsers.add_parser('withdraw', help='Send a Pokemon from the box to the team')
-    deposit_parser.add_argument('id', type=int, help='Pokemon to withdraw')
-    deposit_parser.set_defaults(func=_cmd_withdraw)
+    archive_parser = subparsers.add_parser('archive', help='Send a Pokemon to the archive')
+    archive_parser.add_argument('id', type=int, help='Pokemon to archive')
+    archive_parser.set_defaults(func=_cmd_archive)
+
+    withdraw_parser = subparsers.add_parser('withdraw', help='Send a Pokemon to the team')
+    withdraw_parser.add_argument('id', type=int, help='Pokemon to withdraw')
+    withdraw_parser.set_defaults(func=_cmd_withdraw)
 
     status_parser = subparsers.add_parser('status', help='Show the status of the chosen Pokemon')
     status_parser.add_argument('id', type=int)
@@ -361,6 +423,8 @@ def _build_parser():
                                help='Take the pokemon off the team')
     update_parser.add_argument('--withdraw', '-w', action='store_true', default=False,
                                help='Add the pokemon to the team')
+    update_parser.add_argument('--archive', action='store_true', default=False,
+                               help='Add the pokemon to the archive')
     update_parser.set_defaults(func=_cmd_update)
 
     vitamin_parser = subparsers.add_parser('vitamin', help='Apply a consumable item to a Pokemon')
