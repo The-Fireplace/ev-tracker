@@ -309,7 +309,7 @@ class Pokemon(object):
             evs *= 2
         return evs * number
 
-    def get_vitamin_ev_modifier(self, vitamin):
+    def get_vitamin_ev_modifier(self, vitamin, number=1):
         if vitamin not in VITAMINS:
             matches = difflib.get_close_matches(vitamin, VITAMINS)
             if len(matches) == 0:
@@ -320,7 +320,7 @@ class Pokemon(object):
                 raise ValueError("Ambiguous vitamin '%s'" % vitamin)
         evs = self.evs.clone()
         new_evs = VITAMINS[vitamin](evs)
-        return new_evs - evs
+        return (new_evs - evs) * number
 
     def to_dict(self):
         return {'species': self.species.id, 'name': self._name,

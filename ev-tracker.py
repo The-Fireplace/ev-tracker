@@ -278,7 +278,8 @@ def _cmd_update(args):
 def _cmd_vitamin(args):
     individual_id = args.id
     pokemon = _tracker.get_pokemon(individual_id)
-    modifier = pokemon.get_vitamin_ev_modifier(args.vitamin)
+    count = 1 if args.count is None else args.count
+    modifier = pokemon.get_vitamin_ev_modifier(args.vitamin, count)
     pokemon.evs.capped_add(modifier)
     _save_tracker()
     print(f'{pokemon} new EVs:')
@@ -430,6 +431,7 @@ def _build_parser():
     vitamin_parser = subparsers.add_parser('vitamin', help='Apply a consumable item to a Pokemon')
     vitamin_parser.add_argument('id', type=int, help='Pokemon to apply the vitamin to')
     vitamin_parser.add_argument('vitamin', help='Item to apply')
+    vitamin_parser.add_argument('--count', '-c', type=int)
     vitamin_parser.set_defaults(func=_cmd_vitamin)
 
     set_effort_parser = subparsers.add_parser('set_effort', help='Update a tracked Pokemon\'s effort values')
