@@ -296,7 +296,7 @@ class Pokemon(object):
         evs = species.evs.clone()
         if self.item is not None:
             evs = self.item(evs)
-        if self.pokerus:
+        if self.pokerus and not config.instance.ignore_pokerus():
             evs *= 2
         return evs * number
 

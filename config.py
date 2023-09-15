@@ -21,6 +21,9 @@ class Config(object):
     def berry_reduction_cuts_to_100(self):
         return self.generation == 4
 
+    def ignore_pokerus(self):
+        return self.generation == 9
+
     @classmethod
     def from_json(cls, filename):
         config = cls()
