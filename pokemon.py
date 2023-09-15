@@ -39,6 +39,13 @@ VITAMINS = {
     'Grepa Berry': lambda evs: evs - EvSet(special_defense=get_berry_reduction_amount(evs.special_defense)),
     'Tamato Berry': lambda evs: evs - EvSet(speed=get_berry_reduction_amount(evs.speed)),
     'Perilous Soup': lambda evs: evs * 0,
+    'Health Mochi': lambda evs: evs + EvSet(hp=10),
+    'Muscle Mochi': lambda evs: evs + EvSet(attack=10),
+    'Resist Mochi': lambda evs: evs + EvSet(defense=10),
+    'Genius Mochi': lambda evs: evs + EvSet(special_attack=10),
+    'Clever Mochi': lambda evs: evs + EvSet(special_defense=10),
+    'Swift Mochi': lambda evs: evs + EvSet(speed=10),
+    'Fresh-Start Mochi': lambda evs: evs * 0,
 }
 
 
