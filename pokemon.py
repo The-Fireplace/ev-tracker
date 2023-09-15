@@ -1,3 +1,5 @@
+import difflib
+
 import config
 
 
@@ -309,7 +311,13 @@ class Pokemon(object):
 
     def get_vitamin_ev_modifier(self, vitamin):
         if vitamin not in VITAMINS:
-            raise ValueError("Invalid vitamin '%s'" % vitamin)
+            matches = difflib.get_close_matches(vitamin, VITAMINS)
+            if len(matches) == 0:
+                raise ValueError("Invalid vitamin '%s'" % vitamin)
+            elif len(matches) == 1:
+                vitamin = matches.pop()
+            else:
+                raise ValueError("Ambiguous vitamin '%s'" % vitamin)
         evs = self.evs.clone()
         new_evs = VITAMINS[vitamin](evs)
         return new_evs - evs
